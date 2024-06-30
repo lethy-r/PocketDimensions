@@ -5,7 +5,7 @@ Pocket Dimensions lets you create custom worlds for your players.
 
 **/pdtp <playername>** - Lets you teleport to a players pocket dimensions even if they are offline. Permission - **pocketdimensions.commands.pdtp**
 
-**/pd **- The general command for players to manage their own Pocket Dimension. Permission - pocketdimensions.commands.players.pd
+**/pd** - The general command for players to manage their own Pocket Dimension. Permission - pocketdimensions.commands.players.pd
 
 **Usage:**
 /pd invite <playername> - Invite another player to your pocket dimension. Permission - pocketdimensions.commands.player.pd.invite
