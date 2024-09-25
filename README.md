@@ -3,20 +3,20 @@ Pocket Dimensions lets you create custom worlds for your players.
 ### Commands and permissions:
 **/givepd \<playername\>** - Gives you the special item to go to a pocket dimension. Only the specified player and admins can use the item. Permissions - **pocketdimensions.commands.givepd**
 
-**/pdtp <playername>** - Lets you teleport to a players pocket dimensions even if they are offline. Permission - **pocketdimensions.commands.pdtp**
+**/pdtp \<playername\>** - Lets you teleport to a players pocket dimensions even if they are offline. Permission - **pocketdimensions.commands.pdtp**
 
 **/pd** - The general command for players to manage their own Pocket Dimension. Permission - pocketdimensions.commands.players.pd
 
 **Usage:**
-/pd invite <playername> - Invite another player to your pocket dimension. Permission - pocketdimensions.commands.player.pd.invite
+/pd invite \<playername\> - Invite another player to your pocket dimension. Permission - pocketdimensions.commands.player.pd.invite
 
 /pd acceptinv - Accept the invite (Only valid for 2 Minutes). No extra permission.
 
-/pd kick <player> - Kick the player from your pocket dimension. Permission - pocketdimensions.commands.players.pd.kick.
+/pd kick \<player\> - Kick the player from your pocket dimension. Permission - pocketdimensions.commands.players.pd.kick.
 
 This can be byppassed if the user is OP or has the pocketdimensions.commands.players.pd.kick.bypass permission.
 
-**/pdgamerule <playername> <gamerule> \[value\]** - Set the Value of a Gamerule in a player's pocket dimension. Currently the Default can't be customised. But Soon™! Permission - *pocketdimensions.commands.pdgamerule*
+**/pdgamerule \<playername\> \<gamerule\> \[value\]** - Set the Value of a Gamerule in a player's pocket dimension. Currently the Default can't be customised. But Soon™! Permission - *pocketdimensions.commands.pdgamerule*
 
 ### **Recommended default permission to give to your players:**
 pocketdimensions.commands.pd
