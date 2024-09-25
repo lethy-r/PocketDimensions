@@ -16,12 +16,12 @@ Pocket Dimensions lets you create custom worlds for your players.
 
 This can be byppassed if the user is OP or has the pocketdimensions.commands.players.pd.kick.bypass permission.
 
+**/pdgamerule <playername> <gamerule> [value]** - Set the Value of a Gamerule in a player's pocket dimension. Currently the Default can't be customised. But Soon™! Permission - *pocketdimensions.commands.pdgamerule*
+
 ### **Recommended default permission to give to your players:**
 pocketdimensions.commands.pd
 pocketdimensions.commands.player.pd.invite
 pocketdimensions.commands.player.pd.kick
-
-**/pdgamerule <playername> <gamerule> [value]** - Set the Value of a Gamerule in a player's pocket dimension. Currently the Default can't be customised. But Soon™! Permission - *pocketdimensions.commands.pdgamerule*
 
 **Currently the pocket dimension itself isn't customisable**
 ### The Following Game Rules are set:
