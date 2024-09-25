@@ -1,7 +1,7 @@
 # Pocket Dimensions
 Pocket Dimensions lets you create custom worlds for your players.
 ### Commands and permissions:
-**/givepd <playername>** - Gives you the special item to go to a pocket dimension. Only the specified player and admins can use the item. Permissions - **pocketdimensions.commands.givepd**
+**/givepd \<playername\>** - Gives you the special item to go to a pocket dimension. Only the specified player and admins can use the item. Permissions - **pocketdimensions.commands.givepd**
 
 **/pdtp <playername>** - Lets you teleport to a players pocket dimensions even if they are offline. Permission - **pocketdimensions.commands.pdtp**
 
