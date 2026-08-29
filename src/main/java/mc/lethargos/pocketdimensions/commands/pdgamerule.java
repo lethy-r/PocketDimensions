@@ -1,21 +1,21 @@
 package mc.lethargos.pocketdimensions.commands;
 
+import mc.lethargos.pocketdimensions.managers.DimensionService;
 import mc.lethargos.pocketdimensions.managers.SettingsManager;
 import mc.lethargos.pocketdimensions.storage.DimensionSettings;
+import mc.lethargos.pocketdimensions.utils.GameRuleUtils;
 import mc.lethargos.pocketdimensions.utils.MessageUtils;
 import mc.lethargos.pocketdimensions.utils.WorldUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,9 +23,11 @@ import java.util.UUID;
 public class pdgamerule implements CommandExecutor, TabCompleter {
 
     private final SettingsManager settingsManager;
+    private final DimensionService dimensionService;
 
-    public pdgamerule(SettingsManager settingsManager) {
+    public pdgamerule(SettingsManager settingsManager, DimensionService dimensionService) {
         this.settingsManager = settingsManager;
+        this.dimensionService = dimensionService;
     }
 
     @Override
@@ -49,24 +51,21 @@ public class pdgamerule implements CommandExecutor, TabCompleter {
 
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
         UUID owner = targetPlayer.getUniqueId();
-        String worldName = WorldUtils.pocketWorldName(owner);
-        File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
 
-        if (!worldFolder.exists() || !worldFolder.isDirectory()) {
+        if (!WorldUtils.existingWorldFolder(owner)) {
             player.sendMessage(MessageUtils.getMessage("pdgamerule.no-dimension"));
             return true;
         }
 
-        World targetWorld = Bukkit.getWorld(worldName);
-        if (targetWorld == null) {
-            targetWorld = new WorldCreator(worldName).createWorld();
-        }
+        // Loads the world with its proper preset generator when it was unloaded.
+        World targetWorld = dimensionService.loadWorld(owner);
         if (targetWorld == null) {
             player.sendMessage(MessageUtils.getMessage("dimension.load-failed"));
             return true;
         }
 
-        GameRule<?> gameRule = GameRule.getByName(args[1]);
+        // Resolves with legacy/new name fallbacks so both naming generations work.
+        GameRule<?> gameRule = GameRuleUtils.resolve(args[1]);
         if (gameRule == null) {
             player.sendMessage(MessageUtils.getMessage("pdgamerule.unknown").replace("%rule%", args[1]));
             return true;
@@ -134,7 +133,7 @@ public class pdgamerule implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             // Suggest game rules when the player has typed the second argument
             OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
-            World targetWorld = Bukkit.getWorld(WorldUtils.pocketWorldName(targetPlayer.getUniqueId()));
+            World targetWorld = WorldUtils.findLoadedPocketWorld(targetPlayer.getUniqueId());
 
             if (targetWorld != null) {
                 for (String gameRule : targetWorld.getGameRules()) {

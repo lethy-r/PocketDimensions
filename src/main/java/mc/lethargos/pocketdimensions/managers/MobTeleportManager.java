@@ -2,6 +2,7 @@ package mc.lethargos.pocketdimensions.managers;
 
 import mc.lethargos.pocketdimensions.PocketDimensions;
 import mc.lethargos.pocketdimensions.api.event.MobTeleportEvent;
+import mc.lethargos.pocketdimensions.storage.TrustTier;
 import mc.lethargos.pocketdimensions.utils.MessageUtils;
 import mc.lethargos.pocketdimensions.utils.WorldUtils;
 import org.bukkit.Bukkit;
@@ -16,12 +17,14 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class MobTeleportManager {
 
     private final PocketDimensions plugin;
     private final LocationManager locationManager;
+    private final TrustManager trustManager;
     private boolean enabled;
     private String mode;
     private Set<EntityType> entityList;
@@ -29,9 +32,10 @@ public class MobTeleportManager {
     private boolean allowNamedMobs;
     private boolean separateToolRequired;
 
-    public MobTeleportManager(PocketDimensions plugin, LocationManager locationManager) {
+    public MobTeleportManager(PocketDimensions plugin, LocationManager locationManager, TrustManager trustManager) {
         this.plugin = plugin;
         this.locationManager = locationManager;
+        this.trustManager = trustManager;
         reloadConfig();
     }
 
@@ -121,6 +125,17 @@ public class MobTeleportManager {
             return;
         }
 
+        // Trust gate: mobs standing in someone else's dimension belong to that
+        // owner - visitors may not teleport them out (or into their own world).
+        UUID entityWorldOwner = WorldUtils.ownerUuidOf(entity.getWorld());
+        if (entityWorldOwner != null && !entityWorldOwner.equals(player.getUniqueId())) {
+            TrustTier tier = trustManager.getTier(entityWorldOwner, player.getUniqueId());
+            if (tier != TrustTier.BUILDER && tier != TrustTier.TRUSTED) {
+                player.sendMessage(MessageUtils.getMessage("protection.denied-mobs"));
+                return;
+            }
+        }
+
         World pdWorld = Bukkit.getWorld(WorldUtils.pocketWorldName(player.getUniqueId()));
         if (pdWorld == null) {
             pdWorld = Bukkit.getWorld(WorldUtils.PD_NAME_MARKER + player.getUniqueId().toString());
@@ -179,7 +194,7 @@ public class MobTeleportManager {
             String msg = MessageUtils.getMessage(key).replace("%entity%", entityName);
             player.sendMessage(msg);
         } else {
-             // Teleport failed (maybe event cancelled)
+            player.sendMessage(MessageUtils.getMessage("mob-teleport.failed"));
         }
     }
 }

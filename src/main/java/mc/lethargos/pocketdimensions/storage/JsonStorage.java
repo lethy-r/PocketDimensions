@@ -32,6 +32,9 @@ public class JsonStorage implements Storage {
     private final File dimensionsFile;
     private final Logger logger;
     private final Object lock = new Object();
+    /** Files that could not be read or quarantined; writes to them are refused so a
+     *  corrupt read can never be written back over the remaining data. */
+    private final java.util.Set<String> poisonedFiles = new java.util.HashSet<>();
 
     public JsonStorage(File dataFolder, Logger logger) {
         this.locationsFile = new File(dataFolder, "lastlocs.json");
@@ -157,13 +160,13 @@ public class JsonStorage implements Storage {
     public void clearTrust(UUID owner, UUID target) {
         synchronized (lock) {
             JSONObject dimensions = readJson(dimensionsFile);
-            JSONObject ownerData = (JSONObject) dimensions.get(owner.toString());
-            if (ownerData == null) {
+            Object ownerRaw = dimensions.get(owner.toString());
+            if (!(ownerRaw instanceof JSONObject)) {
                 return;
             }
-            JSONObject trusts = (JSONObject) ownerData.get("trusts");
-            if (trusts != null) {
-                trusts.remove(target.toString());
+            Object trustsObj = ((JSONObject) ownerRaw).get("trusts");
+            if (trustsObj instanceof JSONObject) {
+                ((JSONObject) trustsObj).remove(target.toString());
             }
             writeJson(dimensionsFile, dimensions);
         }
@@ -174,17 +177,17 @@ public class JsonStorage implements Storage {
         synchronized (lock) {
             Map<UUID, TrustTier> result = new HashMap<>();
             JSONObject dimensions = readJson(dimensionsFile);
-            JSONObject ownerData = (JSONObject) dimensions.get(owner.toString());
-            if (ownerData == null) {
+            Object ownerRaw = dimensions.get(owner.toString());
+            if (!(ownerRaw instanceof JSONObject)) {
                 return result;
             }
-            JSONObject trusts = (JSONObject) ownerData.get("trusts");
-            if (trusts == null) {
+            Object trustsObj = ((JSONObject) ownerRaw).get("trusts");
+            if (!(trustsObj instanceof JSONObject)) {
                 return result;
             }
-            for (Object key : trusts.keySet()) {
+            for (Object key : ((JSONObject) trustsObj).keySet()) {
                 try {
-                    TrustTier tier = TrustTier.fromString(String.valueOf(trusts.get(key)));
+                    TrustTier tier = TrustTier.fromString(String.valueOf(((JSONObject) trustsObj).get(key)));
                     if (tier != null) {
                         result.put(UUID.fromString(String.valueOf(key)), tier);
                     }
@@ -273,7 +276,7 @@ public class JsonStorage implements Storage {
     @Override
     public boolean isEmpty() {
         synchronized (lock) {
-            return !locationsFile.exists() && !bordersFile.exists();
+            return !locationsFile.exists() && !bordersFile.exists() && !dimensionsFile.exists();
         }
     }
 
@@ -290,9 +293,16 @@ public class JsonStorage implements Storage {
         }
     }
 
+    JSONObject readDimensionsFile() {
+        synchronized (lock) {
+            return readJson(dimensionsFile);
+        }
+    }
+
     void renameFilesAsImported() {
         renameAsImported(locationsFile);
         renameAsImported(bordersFile);
+        renameAsImported(dimensionsFile);
     }
 
     private void renameAsImported(File file) {
@@ -316,6 +326,9 @@ public class JsonStorage implements Storage {
         if (!file.exists()) {
             return new JSONObject();
         }
+        if (poisonedFiles.contains(file.getName())) {
+            return new JSONObject();
+        }
         try (FileReader reader = new FileReader(file)) {
             Object parsed = new JSONParser().parse(reader);
             if (parsed instanceof JSONObject) {
@@ -323,11 +336,36 @@ public class JsonStorage implements Storage {
             }
         } catch (IOException | ParseException e) {
             logger.severe("Failed to read " + file.getName() + ": " + e.getMessage());
+            quarantine(file);
         }
         return new JSONObject();
     }
 
+    /**
+     * Moves an unreadable file out of the way so the next write starts a fresh
+     * file instead of erasing the store's remaining content. If the rename
+     * fails (file locked), the file is marked poisoned and all writes to it
+     * are refused for this session.
+     */
+    private void quarantine(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".corrupt-" + System.currentTimeMillis());
+        try {
+            Files.move(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            logger.severe(file.getName() + " was unreadable and has been quarantined as " + backup.getName()
+                    + ". A fresh file will be created; recover any needed data from the backup.");
+        } catch (IOException moveException) {
+            poisonedFiles.add(file.getName());
+            logger.severe(file.getName() + " is unreadable AND could not be quarantined (" + moveException.getMessage()
+                    + "). All writes to it are refused this session to protect the remaining data - "
+                    + "fix or remove the file and restart.");
+        }
+    }
+
     private void writeJson(File file, JSONObject json) {
+        if (poisonedFiles.contains(file.getName())) {
+            logger.severe("Refusing to write " + file.getName() + " while it is poisoned (unreadable and unremovable).");
+            return;
+        }
         File temp = new File(file.getParentFile(), file.getName() + ".tmp");
         try (FileWriter writer = new FileWriter(temp)) {
             writer.write(json.toJSONString());
@@ -339,6 +377,10 @@ public class JsonStorage implements Storage {
             Files.move(temp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             logger.severe("Failed to replace " + file.getName() + ": " + e.getMessage());
+            try {
+                Files.deleteIfExists(temp.toPath());
+            } catch (IOException ignored) {
+            }
         }
     }
 

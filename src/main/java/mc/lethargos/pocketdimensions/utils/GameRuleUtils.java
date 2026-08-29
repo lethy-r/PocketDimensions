@@ -61,6 +61,22 @@ public final class GameRuleUtils {
         return setRule(world, name, Integer.class, value);
     }
 
+    /**
+     * Resolves a gamerule by config name with legacy alias fallback, so
+     * commands accept both naming generations on any server version.
+     *
+     * @return the resolved rule, or null when no candidate exists on this server.
+     */
+    public static GameRule<?> resolve(String name) {
+        for (String candidate : candidateNames(name)) {
+            GameRule<?> rule = GameRule.getByName(candidate);
+            if (rule != null) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
     private static boolean setRule(World world, String name, Class<?> expectedType, Object value) {
         for (String candidate : candidateNames(name)) {
             GameRule<?> rule = GameRule.getByName(candidate);

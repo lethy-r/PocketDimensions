@@ -98,7 +98,13 @@ public class pd implements CommandExecutor, TabCompleter {
             case "setspawn" -> handleSetSpawn(player);
             case "upgrade" -> economyManager.upgrade(player);
             case "settings" -> handleSettings(player, args);
-            case "menu" -> menu.open(player);
+            case "menu" -> {
+                if (!plugin.getConfig().getBoolean("features.gui-menu", true)) {
+                    player.sendMessage(MessageUtils.getMessage("feature-disabled"));
+                    return true;
+                }
+                menu.open(player);
+            }
             default -> {
             }
         }

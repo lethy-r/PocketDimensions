@@ -22,9 +22,9 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("player-not-online", "The specified player is not online.");
 
         HARDCODED_DEFAULTS.put("command.reloaded", "&aPocket Dimensions configuration reloaded. (Storage type changes require a restart.)");
+        HARDCODED_DEFAULTS.put("command.storage-restart-required", "&cstorage.type changed - a server restart is required for it to take effect.");
 
         HARDCODED_DEFAULTS.put("givepd.usage", "Mention a player. Usage: /givepd <playername> [type]");
-        HARDCODED_DEFAULTS.put("givepd.item-name", "&d%player%'s Pocket Dimension");
         HARDCODED_DEFAULTS.put("givepd.item-given", "&aGiven %player%'s Pocket Dimension item.");
         HARDCODED_DEFAULTS.put("givepd.tool-given", "&aGiven mob teleporter tool to %player%.");
         HARDCODED_DEFAULTS.put("givepd.invalid-type", "&cInvalid item type. Use 'dimension' or 'mobtool'.");
@@ -36,9 +36,7 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("pd.usage", "Mention an action. Usage: /pd <action> [player]");
         HARDCODED_DEFAULTS.put("pd.invalid-action", "Invalid action. Valid actions are: %actions%");
         HARDCODED_DEFAULTS.put("pd.invite.usage", "You must specify a player for this action.\nUsage:/pd invite <player>");
-        HARDCODED_DEFAULTS.put("pd.invite.no-permission", "&cNo permission");
         HARDCODED_DEFAULTS.put("pd.invite.no-dimension", "You don't have a pocket dimension!");
-        HARDCODED_DEFAULTS.put("pd.invite.not-in-dimension", "You're not in your pocket dimension!");
         HARDCODED_DEFAULTS.put("pd.invite.self", "&cYou can't send invites to yourself!");
         HARDCODED_DEFAULTS.put("pd.invite.sent", "&aInvited %player% Successfully!");
         HARDCODED_DEFAULTS.put("pd.invite.received", "You have been invited to %player%'s Pocket Dimension!\nUse: /pd acceptinv \n To accept it. This expires in 120 seconds(2 Minutes).");
@@ -50,7 +48,6 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("pd.acceptinv.world-not-found", "Hmm, we can't find that pocket dimension. Ask for another invite?");
         
         HARDCODED_DEFAULTS.put("pd.kick.usage", "You must specify a player for this action.\nUsage:/pd kick <player>");
-        HARDCODED_DEFAULTS.put("pd.kick.no-permission", "&cNo permission");
         HARDCODED_DEFAULTS.put("pd.kick.success", "&aKicked Successfully!");
         HARDCODED_DEFAULTS.put("pd.kick.bypass", "&cUnable to kick this player!");
         HARDCODED_DEFAULTS.put("pd.kick.not-in-dimension", "&cPlayer is not in your pocket dimension.");
@@ -77,6 +74,7 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("dimension.creation-failed", "&cFailed to create the pocket dimension.");
         HARDCODED_DEFAULTS.put("dimension.teleporting", "&aSending you to your Pocket Dimension!");
         HARDCODED_DEFAULTS.put("dimension.load-failed", "&cFailed to load the pocket dimension.");
+        HARDCODED_DEFAULTS.put("dimension.teleport-failed", "&cTeleport failed. Please try again.");
         HARDCODED_DEFAULTS.put("dimension.returning", "Sending you back to the main world.");
         
         HARDCODED_DEFAULTS.put("pd.leave.not-in-dimension", "&cYou are not in a pocket dimension.");
@@ -85,7 +83,7 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("mob-teleport.success", "&aTeleported %entity% to your pocket dimension.");
         HARDCODED_DEFAULTS.put("mob-teleport.extract-success", "&aTeleported %entity% out of your pocket dimension.");
         HARDCODED_DEFAULTS.put("mob-teleport.denied", "&cYou cannot teleport this entity.");
-        HARDCODED_DEFAULTS.put("mob-teleport.not-mob", "&cThat is not a valid mob.");
+        HARDCODED_DEFAULTS.put("mob-teleport.failed", "&cCould not teleport that mob.");
         HARDCODED_DEFAULTS.put("mob-teleport.dimension-error", "&cCould not find your pocket dimension.");
         HARDCODED_DEFAULTS.put("mob-teleport.no-return-location", "&cCould not find a return location for the mob.");
 

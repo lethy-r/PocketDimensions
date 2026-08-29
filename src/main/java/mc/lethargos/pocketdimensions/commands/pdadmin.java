@@ -47,14 +47,38 @@ public class pdadmin implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!plugin.getConfig().getBoolean("features.admin-tools", true)) {
+            sender.sendMessage(MessageUtils.getMessage("feature-disabled"));
+            return true;
+        }
         if (args.length == 0) {
             sender.sendMessage(MessageUtils.getMessage("admin.usage"));
             return true;
         }
+        // Each subaction carries its own permission so granting one (e.g. reset)
+        // does not silently unlock the others.
         switch (args[0].toLowerCase()) {
-            case "delete" -> handleDeleteOrReset(sender, args, true);
-            case "reset" -> handleDeleteOrReset(sender, args, false);
-            case "cleanup" -> handleCleanup(sender, args);
+            case "delete" -> {
+                if (!sender.hasPermission("pocketdimensions.commands.admin.delete")) {
+                    sender.sendMessage(MessageUtils.getMessage("no-permission"));
+                    return true;
+                }
+                handleDeleteOrReset(sender, args, true);
+            }
+            case "reset" -> {
+                if (!sender.hasPermission("pocketdimensions.commands.admin.reset")) {
+                    sender.sendMessage(MessageUtils.getMessage("no-permission"));
+                    return true;
+                }
+                handleDeleteOrReset(sender, args, false);
+            }
+            case "cleanup" -> {
+                if (!sender.hasPermission("pocketdimensions.commands.admin.cleanup")) {
+                    sender.sendMessage(MessageUtils.getMessage("no-permission"));
+                    return true;
+                }
+                handleCleanup(sender, args);
+            }
             default -> sender.sendMessage(MessageUtils.getMessage("admin.usage"));
         }
         return true;
@@ -85,7 +109,9 @@ public class pdadmin implements CommandExecutor {
                                 .map(p -> p.getName()).toList())));
                 return;
             }
-            if (!Bukkit.unloadWorld(world, true) || Bukkit.getWorld(worldName) != null) {
+            // Route through the world manager so its empty-since bookkeeping is
+            // cleared too, and verify the server actually let go of the world.
+            if (!dimensionWorldManager.unloadIfEmpty(world) || Bukkit.getWorld(worldName) != null) {
                 sender.sendMessage(MessageUtils.getMessage("admin.unload-failed").replace("%world%", worldName));
                 return;
             }
@@ -150,7 +176,7 @@ public class pdadmin implements CommandExecutor {
                 if (world != null && !world.getPlayers().isEmpty()) {
                     continue;
                 }
-                if (world != null && (!Bukkit.unloadWorld(world, true) || Bukkit.getWorld(worldName) != null)) {
+                if (world != null && (!dimensionWorldManager.unloadIfEmpty(world) || Bukkit.getWorld(worldName) != null)) {
                     plugin.getLogger().warning("Cleanup: could not unload " + worldName + ", skipping.");
                     continue;
                 }

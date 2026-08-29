@@ -41,14 +41,16 @@ public final class PocketDimensions extends JavaPlugin {
         // Load Config
         saveDefaultConfig();
 
-        // Update Config with missing defaults
+        // Update Config with missing defaults. isSet (not contains!) matters:
+        // contains() also resolves through the attached jar defaults, which
+        // would make this updater a silent no-op for every key.
         org.bukkit.configuration.file.FileConfiguration config = getConfig();
         boolean configUpdated = false;
         java.io.InputStream defConfigStream = getResource("config.yml");
         if (defConfigStream != null) {
             org.bukkit.configuration.file.YamlConfiguration defConfig = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(new java.io.InputStreamReader(defConfigStream));
             for (String key : defConfig.getKeys(true)) {
-                if (!config.contains(key)) {
+                if (!config.isSet(key)) {
                     config.set(key, defConfig.get(key));
                     configUpdated = true;
                 }
@@ -74,12 +76,14 @@ public final class PocketDimensions extends JavaPlugin {
         TrustManager trustManager = new TrustManager(storage);
         EconomyManager economyManager = new EconomyManager(this, borderManager);
         economyManager.setup();
-        InviteManager inviteManager = new InviteManager(this, locationManager, trustManager, settingsManager);
         PocketDimensionManager pocketDimensionManager = new PocketDimensionManager(locationManager);
-        MobTeleportManager mobTeleportManager = new MobTeleportManager(this, locationManager);
         DimensionService dimensionService = new DimensionService(this, locationManager, borderManager,
                 settingsManager, economyManager);
-        DimensionWorldManager dimensionWorldManager = new DimensionWorldManager(this, storage, locationManager);
+        MobTeleportManager mobTeleportManager = new MobTeleportManager(this, locationManager, trustManager);
+        InviteManager inviteManager = new InviteManager(this, locationManager, trustManager, settingsManager,
+                dimensionService);
+        DimensionWorldManager dimensionWorldManager = new DimensionWorldManager(this, storage, locationManager,
+                dimensionService);
 
         // Register event listeners
         getServer().getPluginManager().registerEvents(new PlayerInteract(this, mobTeleportManager, dimensionService), this);
@@ -100,7 +104,7 @@ public final class PocketDimensions extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("givepd")).setExecutor(givepdCmd);
         Objects.requireNonNull(this.getCommand("givepd")).setTabCompleter(givepdCmd);
 
-        pdtp pdtpCmd = new pdtp();
+        pdtp pdtpCmd = new pdtp(dimensionService);
         Objects.requireNonNull(this.getCommand("pdtp")).setExecutor(pdtpCmd);
         Objects.requireNonNull(this.getCommand("pdtp")).setTabCompleter(pdtpCmd);
 
@@ -109,7 +113,7 @@ public final class PocketDimensions extends JavaPlugin {
         Objects.requireNonNull(this.getCommand("pd")).setExecutor(pdCmd);
         Objects.requireNonNull(this.getCommand("pd")).setTabCompleter(pdCmd);
 
-        pdgamerule pdgameruleCmd = new pdgamerule(settingsManager);
+        pdgamerule pdgameruleCmd = new pdgamerule(settingsManager, dimensionService);
         Objects.requireNonNull(this.getCommand("pdgamerule")).setExecutor(pdgameruleCmd);
         Objects.requireNonNull(this.getCommand("pdgamerule")).setTabCompleter(pdgameruleCmd);
 

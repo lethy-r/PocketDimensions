@@ -31,11 +31,22 @@ public class PdReload implements CommandExecutor {
             return true;
         }
 
+        String storageTypeBefore = plugin.getConfig().getString("storage.type", "JSON");
+
         plugin.reloadConfig();
         MessageUtils.reload(plugin);
         mobTeleportManager.reloadConfig();
         protectionListener.reloadConfig();
         economyManager.setup();
+
+        // Storage backends hold open resources; a type change can only take
+        // effect after a full restart.
+        String storageTypeAfter = plugin.getConfig().getString("storage.type", "JSON");
+        if (!storageTypeBefore.equalsIgnoreCase(storageTypeAfter)) {
+            plugin.getLogger().severe("storage.type was changed from " + storageTypeBefore + " to " + storageTypeAfter
+                    + " - still using " + storageTypeBefore + ". A server restart is required.");
+            sender.sendMessage(MessageUtils.getMessage("command.storage-restart-required"));
+        }
 
         sender.sendMessage(MessageUtils.getMessage("command.reloaded"));
         return true;

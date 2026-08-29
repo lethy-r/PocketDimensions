@@ -31,14 +31,17 @@ public class InviteManager {
     private final LocationManager locationManager;
     private final TrustManager trustManager;
     private final SettingsManager settingsManager;
+    private final DimensionService dimensionService;
     private final Map<UUID, Map<UUID, InviteRequest>> invites = new HashMap<>();
 
     public InviteManager(PocketDimensions plugin, LocationManager locationManager,
-                         TrustManager trustManager, SettingsManager settingsManager) {
+                         TrustManager trustManager, SettingsManager settingsManager,
+                         DimensionService dimensionService) {
         this.plugin = plugin;
         this.locationManager = locationManager;
         this.trustManager = trustManager;
         this.settingsManager = settingsManager;
+        this.dimensionService = dimensionService;
     }
 
     public void sendInvite(Player inviter, Player receiver) {
@@ -125,7 +128,9 @@ public class InviteManager {
             return;
         }
 
-        World pocketDimensionWorld = Bukkit.getWorld(WorldUtils.pocketWorldName(invite.getOwner()));
+        // Load the dimension if it is merely unloaded; only a truly missing
+        // dimension rejects (and consumes) the invite.
+        World pocketDimensionWorld = dimensionService.loadWorld(invite.getOwner());
         if (pocketDimensionWorld == null) {
             receiver.sendMessage(MessageUtils.getMessage("pd.acceptinv.world-not-found"));
             plugin.getLogger().warning("World not found: " + WorldUtils.pocketWorldName(invite.getOwner()));
@@ -135,8 +140,15 @@ public class InviteManager {
 
         receiver.sendMessage(MessageUtils.getMessage("pd.acceptinv.teleporting")
                 .replace("%player%", invite.getFrom().getName()));
-        locationManager.saveLastLocation(receiver, false);
-        receiver.teleport(pocketDimensionWorld.getSpawnLocation());
+        // Only record the return point when standing outside any pocket
+        // dimension; saving an in-dimension position here would corrupt it.
+        if (!WorldUtils.isPocketWorld(receiver.getWorld())) {
+            locationManager.saveLastLocation(receiver, false);
+        }
+        if (!receiver.teleport(pocketDimensionWorld.getSpawnLocation())) {
+            receiver.sendMessage(MessageUtils.getMessage("dimension.teleport-failed"));
+            return; // Keep the invite so it can be accepted again.
+        }
         remove(invite);
 
         // Notify the dimension owner (respecting their toggle and permission).

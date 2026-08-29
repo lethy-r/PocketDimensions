@@ -16,7 +16,7 @@ public class PocketDimensionManager {
     }
 
     public void kick(Player playerFrom, Player playerTo) {
-        World pocketDimensionWorld = Bukkit.getWorld(WorldUtils.pocketWorldName(playerFrom.getUniqueId()));
+        World pocketDimensionWorld = WorldUtils.findLoadedPocketWorld(playerFrom.getUniqueId());
         if (pocketDimensionWorld == null) {
             playerFrom.sendMessage(MessageUtils.getMessage("pd.kick.no-dimension"));
             return;

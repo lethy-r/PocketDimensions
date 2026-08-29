@@ -3,7 +3,6 @@ version: '${project.version}'
 main: mc.lethargos.pocketdimensions.PocketDimensions
 api-version: '1.19'
 softdepend: [Vault, PlaceholderAPI]
-load: STARTUP
 commands:
   givepd:
     description: "Gives you an item for any players own pocketdimension!"
@@ -48,7 +47,6 @@ commands:
   pdadmin:
     description: "Admin tools: delete, reset or clean up pocket dimensions."
     permission-message: "No Permissions"
-    permission: pocketdimensions.commands.admin.delete
     usage: "/pdadmin <delete|reset|cleanup> [player|days] confirm"
 permissions:
   # --- Feature gating (per player; global switches live in config features:*) ---
@@ -137,4 +135,13 @@ permissions:
     default: op
   pocketdimensions.commands.admin.cleanup:
     description: "Allows /pdadmin cleanup <days>."
+    default: op
+  pocketdimensions.mobteleport.use:
+    description: "Allows using the mob teleportation feature."
+    default: op
+  pocketdimensions.mobteleport.store:
+    description: "Allows sending mobs into the pocket dimension."
+    default: op
+  pocketdimensions.mobteleport.retrieve:
+    description: "Allows retrieving mobs from the pocket dimension."
     default: op

@@ -47,7 +47,9 @@ public class ItemListener implements Listener {
             return;
         }
         storage.setMeta(player.getUniqueId(), KEY_GIVEN_FLAG, "true");
-        player.getInventory().addItem(DimensionKeyItem.createDimensionKey(plugin, player.getUniqueId(), player.getName()));
+        var overflow = player.getInventory().addItem(DimensionKeyItem.createDimensionKey(plugin, player.getUniqueId(), player.getName()));
+        // Never lose the key to a full inventory: drop whatever did not fit.
+        overflow.values().forEach(leftover -> player.getWorld().dropItemNaturally(player.getLocation(), leftover));
         player.sendMessage(MessageUtils.getMessage("givepd.item-given").replace("%player%", player.getName()));
     }
 
@@ -81,28 +83,43 @@ public class ItemListener implements Listener {
             plugin.getLogger().warning("key-item.recipe.shape must have exactly 3 rows; recipe not registered.");
             return;
         }
+        int width = shape.get(0).length();
+        for (String row : shape) {
+            if (row.isEmpty() || row.length() != width || row.length() > 3) {
+                plugin.getLogger().warning("key-item.recipe.shape rows must be equal length (max 3 characters); recipe not registered.");
+                return;
+            }
+        }
         ShapedRecipe recipe = new ShapedRecipe(new org.bukkit.NamespacedKey(plugin, "dimension_key"),
                 DimensionKeyItem.createBlankDimensionKey(plugin));
-        recipe.shape(shape.get(0), shape.get(1), shape.get(2));
-        Map<Character, org.bukkit.Material> seen = new HashMap<>();
-        for (Map<?, ?> entry : plugin.getConfig().getMapList("key-item.recipe.ingredients")) {
-            Object key = entry.get("key");
-            Object material = entry.get("material");
-            if (key == null || material == null || String.valueOf(key).length() != 1) {
-                continue;
-            }
-            char c = String.valueOf(key).charAt(0);
-            org.bukkit.Material mat = org.bukkit.Material.matchMaterial(String.valueOf(material));
-            if (mat == null || seen.containsKey(c)) {
-                plugin.getLogger().warning("Invalid recipe ingredient: " + material);
-                continue;
-            }
-            seen.put(c, mat);
-            recipe.setIngredient(c, mat);
-        }
         try {
+            recipe.shape(shape.get(0), shape.get(1), shape.get(2));
+            Map<Character, org.bukkit.Material> seen = new HashMap<>();
+            for (Map<?, ?> entry : plugin.getConfig().getMapList("key-item.recipe.ingredients")) {
+                Object key = entry.get("key");
+                Object material = entry.get("material");
+                if (key == null || material == null || String.valueOf(key).length() != 1) {
+                    continue;
+                }
+                char c = String.valueOf(key).charAt(0);
+                org.bukkit.Material mat = org.bukkit.Material.matchMaterial(String.valueOf(material));
+                if (mat == null || seen.containsKey(c)) {
+                    plugin.getLogger().warning("Invalid recipe ingredient: " + material);
+                    continue;
+                }
+                seen.put(c, mat);
+                recipe.setIngredient(c, mat);
+            }
+            // Every non-space character in the shape needs a configured ingredient.
+            String joined = String.join("", shape);
+            for (char c : joined.toCharArray()) {
+                if (c != ' ' && !seen.containsKey(c)) {
+                    plugin.getLogger().warning("Recipe shape uses character '" + c + "' with no configured ingredient; recipe not registered.");
+                    return;
+                }
+            }
             Bukkit.addRecipe(recipe);
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             plugin.getLogger().warning("Could not register key recipe: " + e.getMessage());
         }
     }

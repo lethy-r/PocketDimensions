@@ -50,17 +50,26 @@ public class StorageManager {
         return storage;
     }
 
-    /** Imports lastlocs.json / pdborders.json into SQL and renames them *.imported. */
+    /**
+     * Imports lastlocs.json (locations + meta), pdborders.json and
+     * dimensions.json (trusts + settings) into SQL and renames the source
+     * files *.imported - but only when every import step succeeded, so a
+     * failed migration is retried on the next start instead of losing data.
+     */
     private void importFromJsonFiles() {
         JsonStorage legacy = new JsonStorage(plugin.getDataFolder(), plugin.getLogger());
         if (legacy.isEmpty()) {
             return;
         }
         plugin.getLogger().info("Migrating existing JSON data into SQL storage...");
+        boolean failed = false;
 
         JSONObject locations = legacy.readLocationsFile();
-        for (Object keyObj : locations.keySet()) {
+        for (Object keyObj : new java.util.ArrayList<>(locations.keySet())) {
             String key = String.valueOf(keyObj);
+            if (key.startsWith("meta|")) {
+                continue; // metadata handled below
+            }
             Object raw = locations.get(keyObj);
             if (!(raw instanceof JSONObject)) {
                 continue;
@@ -70,14 +79,42 @@ public class StorageManager {
             if (worldObj == null) {
                 continue;
             }
-            StoredLocation stored = new StoredLocation(
-                    String.valueOf(worldObj),
-                    asDouble(loc.get("x")), asDouble(loc.get("y")), asDouble(loc.get("z")),
-                    (float) asDouble(loc.get("yaw")), (float) asDouble(loc.get("pitch")));
-            if (key.endsWith("_pd")) {
-                storage.saveLastLocation(UUID.fromString(key.substring(0, key.length() - 3)), stored, true);
-            } else if (key.length() >= 36) {
-                storage.saveLastLocation(UUID.fromString(key.substring(0, 36)), stored, false);
+            try {
+                StoredLocation stored = new StoredLocation(
+                        String.valueOf(worldObj),
+                        asDouble(loc.get("x")), asDouble(loc.get("y")), asDouble(loc.get("z")),
+                        (float) asDouble(loc.get("yaw")), (float) asDouble(loc.get("pitch")));
+                if (key.endsWith("_pd")) {
+                    storage.saveLastLocation(UUID.fromString(key.substring(0, key.length() - 3)), stored, true);
+                } else if (key.length() >= 36) {
+                    storage.saveLastLocation(UUID.fromString(key.substring(0, 36)), stored, false);
+                }
+            } catch (IllegalArgumentException e) {
+                failed = true;
+                plugin.getLogger().warning("Migration: skipping unrecognised location key '" + key + "'.");
+            }
+        }
+
+        for (Object keyObj : locations.keySet()) {
+            String key = String.valueOf(keyObj);
+            if (!key.startsWith("meta|")) {
+                continue;
+            }
+            Object raw = locations.get(keyObj);
+            if (!(raw instanceof String)) {
+                continue;
+            }
+            String rest = key.substring("meta|".length());
+            int separator = rest.indexOf('|');
+            if (separator <= 0) {
+                continue;
+            }
+            try {
+                storage.setMeta(UUID.fromString(rest.substring(0, separator)),
+                        rest.substring(separator + 1), (String) raw);
+            } catch (IllegalArgumentException e) {
+                failed = true;
+                plugin.getLogger().warning("Migration: skipping unrecognised meta key '" + key + "'.");
             }
         }
 
@@ -87,12 +124,54 @@ public class StorageManager {
             if (value instanceof Number) {
                 try {
                     storage.setBorderSize(UUID.fromString(String.valueOf(keyObj)), ((Number) value).intValue());
-                } catch (IllegalArgumentException ignored) {
-                    // Not a UUID key; skip.
+                } catch (IllegalArgumentException e) {
+                    failed = true;
+                    plugin.getLogger().warning("Migration: skipping unrecognised border key '" + keyObj + "'.");
                 }
             }
         }
 
+        JSONObject dimensions = legacy.readDimensionsFile();
+        for (Object ownerKey : dimensions.keySet()) {
+            UUID owner;
+            try {
+                owner = UUID.fromString(String.valueOf(ownerKey));
+            } catch (IllegalArgumentException e) {
+                failed = true;
+                plugin.getLogger().warning("Migration: skipping unrecognised dimension owner '" + ownerKey + "'.");
+                continue;
+            }
+            Object raw = dimensions.get(ownerKey);
+            if (!(raw instanceof JSONObject)) {
+                continue;
+            }
+            JSONObject ownerData = (JSONObject) raw;
+            Object trustsObj = ownerData.get("trusts");
+            if (trustsObj instanceof JSONObject) {
+                for (Object targetKey : ((JSONObject) trustsObj).keySet()) {
+                    TrustTier tier = TrustTier.fromString(String.valueOf(((JSONObject) trustsObj).get(targetKey)));
+                    if (tier == null) {
+                        continue;
+                    }
+                    try {
+                        storage.setTrust(owner, UUID.fromString(String.valueOf(targetKey)), tier);
+                    } catch (IllegalArgumentException e) {
+                        failed = true;
+                        plugin.getLogger().warning("Migration: skipping unrecognised trust target '" + targetKey + "'.");
+                    }
+                }
+            }
+            Object settingsObj = ownerData.get("settings");
+            if (settingsObj instanceof JSONObject) {
+                storage.saveSettings(owner, DimensionSettings.fromJson((JSONObject) settingsObj));
+            }
+        }
+
+        if (failed) {
+            plugin.getLogger().severe("Migration finished with errors - the JSON files were NOT renamed."
+                    + " Fix the reported problems and restart to retry, so no data is lost.");
+            return;
+        }
         legacy.renameFilesAsImported();
         plugin.getLogger().info("Migration complete.");
     }

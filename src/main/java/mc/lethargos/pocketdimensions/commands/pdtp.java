@@ -1,11 +1,11 @@
 package mc.lethargos.pocketdimensions.commands;
 
+import mc.lethargos.pocketdimensions.managers.DimensionService;
 import mc.lethargos.pocketdimensions.utils.MessageUtils;
 import mc.lethargos.pocketdimensions.utils.WorldUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,11 +14,18 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class pdtp implements CommandExecutor, TabCompleter {
+
+    private final DimensionService dimensionService;
+
+    public pdtp(DimensionService dimensionService) {
+        this.dimensionService = dimensionService;
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
@@ -38,24 +45,22 @@ public class pdtp implements CommandExecutor, TabCompleter {
         }
 
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(args[0]);
-        String worldName = WorldUtils.pocketWorldName(targetPlayer.getUniqueId());
-        File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
+        UUID owner = targetPlayer.getUniqueId();
 
-        if (worldFolder.exists() && worldFolder.isDirectory()) {
-            World targetWorld = Bukkit.getWorld(worldName);
-            if (targetWorld == null) {
-                targetWorld = new WorldCreator(worldName).createWorld();
-            }
-            if (targetWorld == null) {
-                player.sendMessage(MessageUtils.getMessage("dimension.load-failed"));
-                return true;
-            }
-            player.sendMessage(MessageUtils.getMessage("pdtp.teleporting")
-                    .replace("%player%", targetPlayer.getName() != null ? targetPlayer.getName() : args[0]));
-            player.teleport(targetWorld.getSpawnLocation());
-        } else {
+        if (!WorldUtils.existingWorldFolder(owner)) {
             player.sendMessage(MessageUtils.getMessage("pdtp.no-dimension"));
+            return true;
         }
+
+        // Loads the world with its proper preset generator when it was unloaded.
+        World targetWorld = dimensionService.loadWorld(owner);
+        if (targetWorld == null) {
+            player.sendMessage(MessageUtils.getMessage("dimension.load-failed"));
+            return true;
+        }
+        player.sendMessage(MessageUtils.getMessage("pdtp.teleporting")
+                .replace("%player%", targetPlayer.getName() != null ? targetPlayer.getName() : args[0]));
+        player.teleport(targetWorld.getSpawnLocation());
 
         return true;
     }

@@ -61,6 +61,17 @@ public class EconomyManager {
                 "economy.insufficient-funds-creation", null);
     }
 
+    /** Deposits the creation cost back when world creation failed after charging. */
+    public void refundCreation(Player player) {
+        double cost = plugin.getConfig().getDouble("economy.creation-cost", 0.0);
+        if (cost <= 0 || !isEnabled()) {
+            return;
+        }
+        economy.depositPlayer(player, cost);
+        plugin.getLogger().info("Refunded " + economy.format(cost) + " creation cost to "
+                + player.getName() + " (world creation failed).");
+    }
+
     /**
      * Moves the player's border to the next configured tier, charging when the
      * economy is active. Always sends the player a response message.

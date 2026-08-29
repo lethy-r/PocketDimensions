@@ -31,7 +31,7 @@ public class PocketDimensionsExpansion extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "pocketdimensions";
+        return "pd";
     }
 
     @Override

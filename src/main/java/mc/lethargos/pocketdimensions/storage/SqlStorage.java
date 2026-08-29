@@ -292,6 +292,10 @@ public class SqlStorage implements Storage {
 
     @Override
     public void setMeta(UUID player, String key, String value) {
+        if (value == null) {
+            clearMeta(player, key);
+            return;
+        }
         withRetry(con -> {
             int updated;
             try (PreparedStatement ps = con.prepareStatement(
@@ -301,7 +305,7 @@ public class SqlStorage implements Storage {
                 ps.setString(3, key);
                 updated = ps.executeUpdate();
             }
-            if (updated == 0 && value != null) {
+            if (updated == 0) {
                 try (PreparedStatement ps = con.prepareStatement(
                         "INSERT INTO " + tablePrefix + "meta (uuid, meta_key, meta_value) VALUES (?, ?, ?)")) {
                     ps.setString(1, player.toString());
@@ -380,8 +384,8 @@ public class SqlStorage implements Storage {
 
     @Override
     public Map<UUID, TrustTier> getTrusts(UUID owner) {
-        Map<UUID, TrustTier> result = new HashMap<>();
-        withRetry(con -> {
+        return withRetry(con -> {
+            Map<UUID, TrustTier> result = new HashMap<>();
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT target, tier FROM " + tablePrefix + "trusts WHERE owner = ?")) {
                 ps.setString(1, owner.toString());
@@ -397,9 +401,8 @@ public class SqlStorage implements Storage {
                     }
                 }
             }
-            return null;
+            return result;
         }, "getTrusts", null);
-        return result;
     }
 
     @Override
@@ -439,7 +442,7 @@ public class SqlStorage implements Storage {
                     return settings;
                 }
             }
-        }, "getSettings", new DimensionSettings());
+        }, "getSettings", null);
     }
 
     @Override

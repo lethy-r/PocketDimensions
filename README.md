@@ -1,4 +1,4 @@
-# Pocket Dimensions 0.0.6-ALPHA
+# Pocket Dimensions 0.0.7-ALPHA
 Pocket Dimensions lets every player own a personal world — invite friends, set trust levels, teleport mobs, and customize generation. One jar supports **Minecraft 1.19.4 → 26.2** (Bukkit, Spigot, Paper, Purpur).
 
 ### Commands

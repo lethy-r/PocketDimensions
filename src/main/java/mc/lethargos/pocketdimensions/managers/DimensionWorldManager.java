@@ -7,14 +7,12 @@ import mc.lethargos.pocketdimensions.utils.WorldUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -35,12 +33,15 @@ public class DimensionWorldManager implements Listener {
     private final PocketDimensions plugin;
     private final Storage storage;
     private final LocationManager locationManager;
+    private final DimensionService dimensionService;
     private final Map<String, Long> emptySince = new HashMap<>();
 
-    public DimensionWorldManager(PocketDimensions plugin, Storage storage, LocationManager locationManager) {
+    public DimensionWorldManager(PocketDimensions plugin, Storage storage, LocationManager locationManager,
+                                 DimensionService dimensionService) {
         this.plugin = plugin;
         this.storage = storage;
         this.locationManager = locationManager;
+        this.dimensionService = dimensionService;
     }
 
     public void start() {
@@ -105,9 +106,17 @@ public class DimensionWorldManager implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if (WorldUtils.isPocketWorld(player.getWorld())) {
-            storage.setMeta(player.getUniqueId(), LOGOUT_FLAG, player.getWorld().getName());
+        UUID owner = WorldUtils.ownerUuidOf(player.getWorld());
+        // Only track logging out inside the player's OWN dimension; saving an
+        // in-dimension position of someone else's world would corrupt their
+        // own return data.
+        if (owner == null || !owner.equals(player.getUniqueId())) {
+            return;
         }
+        // Persist where they stood so the rejoin restores the exact spot,
+        // not the position of their last /pdleave.
+        locationManager.saveLastLocation(player, true);
+        storage.setMeta(player.getUniqueId(), LOGOUT_FLAG, player.getWorld().getName());
     }
 
     @EventHandler
@@ -117,27 +126,23 @@ public class DimensionWorldManager implements Listener {
         if (worldName == null) {
             return;
         }
-        storage.clearMeta(player.getUniqueId(), LOGOUT_FLAG);
 
-        World world = Bukkit.getWorld(worldName);
+        World world = dimensionService.loadWorld(player.getUniqueId());
         if (world == null) {
-            File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
-            if (!worldFolder.isDirectory()) {
-                return; // Dimension is gone; the player stays in the main world.
-            }
-            world = Bukkit.createWorld(new WorldCreator(worldName));
-        }
-        if (world == null) {
-            plugin.getLogger().warning("Could not reload pocket dimension '" + worldName + "' for " + player.getName() + ".");
+            // The dimension no longer exists; the player stays in the main world.
+            storage.clearMeta(player.getUniqueId(), LOGOUT_FLAG);
             return;
         }
 
         Location pdLocation = locationManager.getLastStoredPdLocation(player);
-        if (pdLocation != null && pdLocation.getWorld() == world) {
-            player.teleport(pdLocation);
-        } else {
-            player.teleport(world.getSpawnLocation());
+        Location target = (pdLocation != null && pdLocation.getWorld() == world)
+                ? pdLocation : world.getSpawnLocation();
+        if (!player.teleport(target)) {
+            // Keep the flag so the next join retries the restore.
+            return;
         }
+        storage.clearMeta(player.getUniqueId(), LOGOUT_FLAG);
+        dimensionService.applyBorderAndRules(world, player.getUniqueId());
         plugin.getLogger().info("Returned " + player.getName() + " to their pocket dimension after rejoin.");
     }
 }

@@ -5,10 +5,10 @@ feature-disabled: "&cThis feature is disabled."
 
 command:
   reloaded: "&aPocket Dimensions configuration reloaded. (Storage type changes require a restart.)"
+  storage-restart-required: "&cstorage.type changed - a server restart is required for it to take effect."
 
 givepd:
   usage: "Mention a player. Usage: /givepd <playername> [type]"
-  item-name: "&d%player%'s Pocket Dimension"
   item-given: "&aGiven %player%'s Pocket Dimension item."
   tool-given: "&aGiven mob teleporter tool to %player%."
   invalid-type: "&cInvalid item type. Use 'dimension' or 'mobtool'."
@@ -24,10 +24,8 @@ pd:
 
   invite:
     usage: "You must specify a player for this action.\nUsage:/pd invite <player>"
-    no-permission: "&cNo permission"
     no-dimension: "&cStand inside a pocket dimension before inviting anyone."
     not-owner: "&cOnly the owner (or trusted members) can invite players here."
-    not-in-dimension: "You're not in your pocket dimension!"
     self: "&cYou can't send invites to yourself!"
     sent: "&aInvited %player% Successfully!"
     received: "You have been invited to %player%'s Pocket Dimension!\nUse: /pd acceptinv \n To accept it. This expires in 120 seconds(2 Minutes)."
@@ -43,7 +41,6 @@ pd:
 
   kick:
     usage: "You must specify a player for this action.\nUsage:/pd kick <player>"
-    no-permission: "&cNo permission"
     success: "&aKicked Successfully!"
     bypass: "&cUnable to kick this player!"
     not-in-dimension: "&cPlayer is not in your pocket dimension."
@@ -51,7 +48,9 @@ pd:
 
   trust:
     usage: "Usage: /pd trust <player> [builder|trusted]"
-    untrust-usage: "Usage: /pd untrust <player>"
+
+  untrust:
+    usage: "Usage: /pd untrust <player>"
     self: "&cYou can't change your own trust."
     success: "&a%player% is now %tier% in your dimension."
     removed: "&a%player% is no longer trusted in your dimension."
@@ -105,6 +104,7 @@ dimension:
   creation-failed: "&cFailed to create the pocket dimension."
   teleporting: "&aSending you to your Pocket Dimension!"
   load-failed: "&cFailed to load the pocket dimension."
+  teleport-failed: "&cTeleport failed. Please try again."
   returning: "Sending you back to the main world."
   title-enter: "&dPocket Dimension"
   subtitle-enter: "&7Welcome to your personal world"
@@ -152,8 +152,10 @@ menu:
     name: "&7Back"
   teleport:
     name: "&5Travel to your dimension"
-    lore-enter: "&7Enter your pocket dimension."
-    lore-leave: "&7Return to the main world."
+    lore-enter:
+      - "&7Enter your pocket dimension."
+    lore-leave:
+      - "&7Return to the main world."
   trust:
     name: "&bTrusted players"
     lore: "&7Manage who can build here."
@@ -191,6 +193,6 @@ mob-teleport:
   success: "&aTeleported %entity% to your pocket dimension."
   extract-success: "&aTeleported %entity% out of your pocket dimension."
   denied: "&cYou cannot teleport this entity."
-  not-mob: "&cThat is not a valid mob."
+  failed: "&cCould not teleport that mob."
   dimension-error: "&cCould not find your pocket dimension."
   no-return-location: "&cCould not find a return location for the mob."

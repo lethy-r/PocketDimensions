@@ -32,6 +32,10 @@ public class pdlist implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!plugin.getConfig().getBoolean("features.admin-tools", true)) {
+            sender.sendMessage(MessageUtils.getMessage("feature-disabled"));
+            return true;
+        }
         if (!sender.hasPermission("pocketdimensions.commands.admin.list")) {
             sender.sendMessage(MessageUtils.getMessage("no-permission"));
             return true;
@@ -68,7 +72,8 @@ public class pdlist implements CommandExecutor {
             Integer border = borderManager.getBorderSize(owner);
             String borderText = String.valueOf(border != null ? border
                     : plugin.getConfig().getInt("default-world-border-size", 10000));
-            String lastSeen = player.isOnline() ? "online" : dateFormat.format(new Date(player.getLastPlayed()));
+            String lastSeen = player.isOnline() ? "online"
+                    : (player.getLastPlayed() > 0 ? dateFormat.format(new Date(player.getLastPlayed())) : "never");
             sender.sendMessage(MessageUtils.getMessage("admin.list.entry")
                     .replace("%player%", name)
                     .replace("%state%", loaded ? "loaded" : "unloaded")

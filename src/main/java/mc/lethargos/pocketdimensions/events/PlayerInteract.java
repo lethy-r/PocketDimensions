@@ -111,6 +111,9 @@ public class PlayerInteract implements Listener {
         }
 
         cooldowns.put(playerUUID, System.currentTimeMillis());
+        // Stop the click from ALSO interacting with the block/entity behind it
+        // (opening a chest and teleporting in the same click).
+        event.setCancelled(true);
 
         UUID worldOwner = WorldUtils.ownerUuidOf(p.getWorld());
         if (p.getUniqueId().equals(worldOwner)) {

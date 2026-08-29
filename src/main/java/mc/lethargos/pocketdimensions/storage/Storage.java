@@ -39,12 +39,18 @@ public interface Storage {
 
     void clearTrust(UUID owner, UUID target);
 
-    /** @return all trust entries granted by the owner (target uuid -> tier). */
+    /**
+     * @return all trust entries granted by the owner (target uuid -> tier),
+     *         or null when the backend read failed (callers must not cache null).
+     */
     java.util.Map<UUID, TrustTier> getTrusts(UUID owner);
 
     // --- Per-dimension settings ---
 
-    /** @return the owner's settings; never null (empty settings if none stored). */
+    /**
+     * @return the owner's settings (empty when none stored), or null when the
+     *         backend read failed (callers must not cache or save over null).
+     */
     DimensionSettings getSettings(UUID owner);
 
     void saveSettings(UUID owner, DimensionSettings settings);

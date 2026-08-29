@@ -3,6 +3,7 @@ package mc.lethargos.pocketdimensions.utils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
+import java.io.File;
 import java.util.UUID;
 
 public class WorldUtils {
@@ -14,7 +15,7 @@ public class WorldUtils {
     }
 
     public static boolean isPocketWorld(World world) {
-        return world != null && world.getName().contains(PD_NAME_MARKER);
+        return ownerUuidOf(world) != null;
     }
 
     /**
@@ -61,5 +62,26 @@ public class WorldUtils {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    /** Resolves a loaded pocket dimension under either naming scheme (some hosts flatten folder names). */
+    public static World findLoadedPocketWorld(UUID owner) {
+        World world = Bukkit.getWorld(pocketWorldName(owner));
+        return world != null ? world : Bukkit.getWorld(simpleWorldName(pocketWorldName(owner)));
+    }
+
+    /** @return true when the dimension's world folder exists on disk (full-path or flattened name). */
+    public static boolean existingWorldFolder(UUID owner) {
+        return worldFolder(owner) != null;
+    }
+
+    /** @return the dimension's world folder on disk, preferring the full-path name, or null if absent. */
+    public static File worldFolder(UUID owner) {
+        File full = new File(Bukkit.getWorldContainer(), pocketWorldName(owner));
+        if (full.isDirectory()) {
+            return full;
+        }
+        File simple = new File(Bukkit.getWorldContainer(), simpleWorldName(pocketWorldName(owner)));
+        return simple.isDirectory() ? simple : null;
     }
 }

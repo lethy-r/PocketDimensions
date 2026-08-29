@@ -89,9 +89,9 @@ public class DimensionSettings {
             return settings;
         }
         Object preset = json.get("preset");
-        if (preset != null) settings.preset = String.valueOf(preset);
+        if (preset != null) settings.setPreset(String.valueOf(preset));
         Object environment = json.get("environment");
-        if (environment != null) settings.environment = String.valueOf(environment);
+        if (environment != null) settings.setEnvironment(String.valueOf(environment));
         Object notify = json.get("notifyOnEntry");
         if (notify instanceof Boolean) {
             settings.notifyOnEntry = (Boolean) notify;

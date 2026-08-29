@@ -21,9 +21,20 @@ public class TrustManager {
         this.storage = storage;
     }
 
-    /** @return the tier the owner granted the target, or null if untrusted. */
+    /**
+     * @return the tier the owner granted the target, or null if untrusted.
+     *         A backend read failure also returns null (fail closed) without
+     *         caching anything.
+     */
     public TrustTier getTier(UUID owner, UUID target) {
-        Map<UUID, TrustTier> trusts = cache.computeIfAbsent(owner, storage::getTrusts);
+        Map<UUID, TrustTier> trusts = cache.get(owner);
+        if (trusts == null) {
+            trusts = storage.getTrusts(owner);
+            if (trusts == null) {
+                return null; // backend failure - fail closed, do not cache
+            }
+            cache.put(owner, trusts);
+        }
         return trusts.get(target);
     }
 
@@ -40,8 +51,17 @@ public class TrustManager {
         }
     }
 
+    /** @return the owner's trust map; failures return an empty uncached map. */
     public Map<UUID, TrustTier> getTrusts(UUID owner) {
-        return cache.computeIfAbsent(owner, storage::getTrusts);
+        Map<UUID, TrustTier> trusts = cache.get(owner);
+        if (trusts == null) {
+            trusts = storage.getTrusts(owner);
+            if (trusts == null) {
+                return new HashMap<>(); // backend failure - do not cache
+            }
+            cache.put(owner, trusts);
+        }
+        return trusts;
     }
 
     /** Drops all cached entries (used after a purge). */
