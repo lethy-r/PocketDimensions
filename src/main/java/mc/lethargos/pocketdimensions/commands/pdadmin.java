@@ -85,12 +85,18 @@ public class pdadmin implements CommandExecutor {
                                 .map(p -> p.getName()).toList())));
                 return;
             }
-            Bukkit.unloadWorld(world, true);
+            if (!Bukkit.unloadWorld(world, true) || Bukkit.getWorld(worldName) != null) {
+                sender.sendMessage(MessageUtils.getMessage("admin.unload-failed").replace("%world%", worldName));
+                return;
+            }
         }
 
         File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
         if (worldFolder.exists()) {
-            deleteRecursively(worldFolder);
+            if (!deleteRecursively(worldFolder)) {
+                sender.sendMessage(MessageUtils.getMessage("admin.delete-failed").replace("%world%", worldName));
+                return;
+            }
         }
         if (deleteData) {
             storage.purgePlayer(target.getUniqueId());
@@ -144,12 +150,17 @@ public class pdadmin implements CommandExecutor {
                 if (world != null && !world.getPlayers().isEmpty()) {
                     continue;
                 }
-                if (world != null) {
-                    Bukkit.unloadWorld(world, true);
+                if (world != null && (!Bukkit.unloadWorld(world, true) || Bukkit.getWorld(worldName) != null)) {
+                    plugin.getLogger().warning("Cleanup: could not unload " + worldName + ", skipping.");
+                    continue;
                 }
-                deleteRecursively(folder);
-                storage.purgePlayer(owner.getUniqueId());
-                removed++;
+                File worldFolder = new File(Bukkit.getWorldContainer(), worldName);
+                if (!worldFolder.exists() || deleteRecursively(worldFolder)) {
+                    storage.purgePlayer(owner.getUniqueId());
+                    removed++;
+                } else {
+                    plugin.getLogger().warning("Cleanup: could not fully delete " + worldName + ", skipping.");
+                }
             }
         }
         trustManager.invalidateAll();
@@ -168,18 +179,23 @@ public class pdadmin implements CommandExecutor {
         return (offline.hasPlayedBefore() || offline.isOnline()) ? offline : null;
     }
 
-    private void deleteRecursively(File file) {
+    /** @return true only when every file was removed and the folder is gone. */
+    private boolean deleteRecursively(File file) {
         Path path = file.toPath();
+        boolean[] success = {true};
         try (Stream<Path> walk = Files.walk(path)) {
             walk.sorted(Comparator.reverseOrder()).forEach(p -> {
                 try {
                     Files.delete(p);
                 } catch (IOException e) {
+                    success[0] = false;
                     plugin.getLogger().warning("Could not delete " + p + ": " + e.getMessage());
                 }
             });
         } catch (IOException e) {
             plugin.getLogger().severe("Could not walk " + path + ": " + e.getMessage());
+            return false;
         }
+        return success[0] && !Files.exists(path);
     }
 }

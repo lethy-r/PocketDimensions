@@ -125,6 +125,8 @@ admin:
   usage: "&cUsage: /pdadmin <delete|reset> <player> confirm | /pdadmin cleanup <days> confirm"
   confirm-required: "&cThis cannot be undone. Run &f%command% confirm&c to proceed."
   occupied: "&cThat dimension still has players inside: %players%"
+  unload-failed: "&cCould not unload '&f%world%&c'. Nothing was deleted - try again, or restart the server first."
+  delete-failed: "&cCould not fully delete '&f%world%&c' (files locked?). Nothing was changed - restart the server and delete the folder manually."
   delete:
     usage: "Usage: /pdadmin delete <player> confirm"
     success: "&aDeleted the pocket dimension and all its data."
@@ -145,6 +147,7 @@ world-management:
 menu:
   title: "&dPocket Dimension Menu"
   locked: "&8(No permission)"
+  regeneration-required: "&cWorld exists - reset required to apply"
   back:
     name: "&7Back"
   teleport:

@@ -129,6 +129,8 @@ public class MessageUtils {
         HARDCODED_DEFAULTS.put("admin.usage", "&cUsage: /pdadmin <delete|reset> <player> confirm | /pdadmin cleanup <days> confirm");
         HARDCODED_DEFAULTS.put("admin.confirm-required", "&cThis cannot be undone. Run &f%command% confirm&c to proceed.");
         HARDCODED_DEFAULTS.put("admin.occupied", "&cThat dimension still has players inside: %players%");
+        HARDCODED_DEFAULTS.put("admin.unload-failed", "&cCould not unload '&f%world%&c'. Nothing was deleted - try again, or restart the server first.");
+        HARDCODED_DEFAULTS.put("admin.delete-failed", "&cCould not fully delete '&f%world%&c' (files locked?). Nothing was changed - restart the server and delete the folder manually.");
         HARDCODED_DEFAULTS.put("admin.delete.usage", "Usage: /pdadmin delete <player> confirm");
         HARDCODED_DEFAULTS.put("admin.delete.success", "&aDeleted the pocket dimension and all its data.");
         HARDCODED_DEFAULTS.put("admin.reset.usage", "Usage: /pdadmin reset <player> confirm");
@@ -143,6 +145,7 @@ public class MessageUtils {
 
         HARDCODED_DEFAULTS.put("menu.title", "&dPocket Dimension Menu");
         HARDCODED_DEFAULTS.put("menu.locked", "&8(No permission)");
+        HARDCODED_DEFAULTS.put("menu.regeneration-required", "&cWorld exists - reset required to apply");
         HARDCODED_DEFAULTS.put("menu.back.name", "&7Back");
         HARDCODED_DEFAULTS.put("menu.teleport.name", "&5Travel to your dimension");
         HARDCODED_DEFAULTS.put("menu.teleport.lore-enter", "&7Enter your pocket dimension.");

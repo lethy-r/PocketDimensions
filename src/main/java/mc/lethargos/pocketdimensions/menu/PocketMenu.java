@@ -238,16 +238,25 @@ public class PocketMenu implements Listener {
         String preset = settings.getPreset() != null ? settings.getPreset() : "FLAT";
         String environment = settings.getEnvironment() != null ? settings.getEnvironment() : "NORMAL";
         boolean inOwn = player.getUniqueId().equals(WorldUtils.ownerUuidOf(player.getWorld()));
+        boolean worldExists = dimensionExists(player.getUniqueId());
 
         session.inventory.setItem(SLOT_TELEPORT, item(Material.ENDER_PEARL, "menu.teleport.name",
                 inOwn ? "menu.teleport.lore-leave" : "menu.teleport.lore-enter",
                 player.hasPermission(PERM_BASE + ".teleport")));
         session.inventory.setItem(SLOT_TRUST, item(Material.PLAYER_HEAD, "menu.trust.name",
                 "menu.trust.lore", player.hasPermission(PERM_BASE + ".trust")));
-        session.inventory.setItem(SLOT_PRESET, item(Material.GRASS_BLOCK, "menu.preset.name", "menu.preset.lore",
-                player.hasPermission(PERM_BASE + ".settings"), "%value%", preset));
-        session.inventory.setItem(SLOT_ENVIRONMENT, item(Material.OBSIDIAN, "menu.environment.name",
-                "menu.environment.lore", player.hasPermission(PERM_BASE + ".settings"), "%value%", environment));
+        ItemStack presetItem = item(Material.GRASS_BLOCK, "menu.preset.name", "menu.preset.lore",
+                player.hasPermission(PERM_BASE + ".settings"), "%value%", preset);
+        ItemStack environmentItem = item(Material.OBSIDIAN, "menu.environment.name",
+                "menu.environment.lore", player.hasPermission(PERM_BASE + ".settings"), "%value%", environment);
+        if (worldExists) {
+            // Generation settings only apply at creation; an existing world
+            // must be reset before a change takes effect.
+            appendLore(presetItem, "menu.regeneration-required");
+            appendLore(environmentItem, "menu.regeneration-required");
+        }
+        session.inventory.setItem(SLOT_PRESET, presetItem);
+        session.inventory.setItem(SLOT_ENVIRONMENT, environmentItem);
 
         int currentBorder = currentBorderSize(player);
         EconomyManager.UpgradeTier next = economyManager.nextTier(currentBorder);
@@ -265,6 +274,25 @@ public class PocketMenu implements Listener {
     private int currentBorderSize(Player player) {
         Integer size = borderManager.getBorderSize(player.getUniqueId());
         return size != null ? size : plugin.getConfig().getInt("default-world-border-size", 10000);
+    }
+
+    /** True when the player's dimension world is loaded or exists on disk (i.e. already generated). */
+    private boolean dimensionExists(UUID owner) {
+        String worldPath = WorldUtils.pocketWorldName(owner);
+        return Bukkit.getWorld(worldPath) != null
+                || new java.io.File(Bukkit.getWorldContainer(), worldPath).isDirectory();
+    }
+
+    private void appendLore(ItemStack item, String messageKey) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return;
+        }
+        List<net.kyori.adventure.text.Component> lore =
+                meta.lore() != null ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+        lore.add(MessageUtils.legacy(MessageUtils.getMessage(messageKey)));
+        meta.lore(lore);
+        item.setItemMeta(meta);
     }
 
     private void buildTrustView(Session session) {
