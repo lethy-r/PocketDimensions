@@ -1,0 +1,193 @@
+no-permission: "&cNo Permission"
+only-players: "This command can only be executed by a player."
+player-not-online: "The specified player is not online."
+feature-disabled: "&cThis feature is disabled."
+
+command:
+  reloaded: "&aPocket Dimensions configuration reloaded. (Storage type changes require a restart.)"
+
+givepd:
+  usage: "Mention a player. Usage: /givepd <playername> [type]"
+  item-name: "&d%player%'s Pocket Dimension"
+  item-given: "&aGiven %player%'s Pocket Dimension item."
+  tool-given: "&aGiven mob teleporter tool to %player%."
+  invalid-type: "&cInvalid item type. Use 'dimension' or 'mobtool'."
+
+pdtp:
+  usage: "Mention a player. Usage: /pdtp <playername>"
+  teleporting: "Teleporting to %player%'s pocket dimension."
+  no-dimension: "That player doesn't have a pocket dimension."
+
+pd:
+  usage: "Mention an action. Usage: /pd <action> [player]"
+  invalid-action: "Invalid action. Valid actions are: %actions%"
+
+  invite:
+    usage: "You must specify a player for this action.\nUsage:/pd invite <player>"
+    no-permission: "&cNo permission"
+    no-dimension: "&cStand inside a pocket dimension before inviting anyone."
+    not-owner: "&cOnly the owner (or trusted members) can invite players here."
+    not-in-dimension: "You're not in your pocket dimension!"
+    self: "&cYou can't send invites to yourself!"
+    sent: "&aInvited %player% Successfully!"
+    received: "You have been invited to %player%'s Pocket Dimension!\nUse: /pd acceptinv \n To accept it. This expires in 120 seconds(2 Minutes)."
+    expired-sender: "&cInvite to %player% has expired."
+    expired-receiver: "&cYour invite from %player% has expired."
+    entered: "&e%player% &7entered your pocket dimension."
+
+  acceptinv:
+    no-invites: "&cNo invites."
+    multiple: "&eYou have several invites: &f%list%&e. Use /pd acceptinv <player>."
+    teleporting: "Going to %player%'s Pocket Dimension!"
+    world-not-found: "Hmm, we can't find that pocket dimension. Ask for another invite?"
+
+  kick:
+    usage: "You must specify a player for this action.\nUsage:/pd kick <player>"
+    no-permission: "&cNo permission"
+    success: "&aKicked Successfully!"
+    bypass: "&cUnable to kick this player!"
+    not-in-dimension: "&cPlayer is not in your pocket dimension."
+    no-dimension: "&cYou don't have a pocket dimension!"
+
+  trust:
+    usage: "Usage: /pd trust <player> [builder|trusted]"
+    untrust-usage: "Usage: /pd untrust <player>"
+    self: "&cYou can't change your own trust."
+    success: "&a%player% is now %tier% in your dimension."
+    removed: "&a%player% is no longer trusted in your dimension."
+    granted: "&aYou are now %tier% in %player%'s dimension."
+    invalid-tier: "&cUnknown tier. Valid: %tiers%"
+
+  setspawn:
+    success: "&aDimension spawn point set to your location."
+    not-in-dimension: "&cYou must be inside your own pocket dimension."
+
+  upgrade:
+    success: "&aDimension border upgraded to %size% blocks."
+    max: "&eYour dimension is already at the largest configured size."
+    charged: "&7Charged &f%cost%&7."
+
+  settings:
+    current: "&7Preset: &f%preset%&7, environment: &f%environment%&7, entry notifications: &f%notify%"
+    usage: "Usage: /pd settings <preset|environment|notify> <value>"
+    invalid-preset: "&cInvalid preset. Valid: flat, void, normal"
+    invalid-environment: "&cInvalid environment. Valid: normal, nether, the_end"
+    invalid-notify: "&cValid values: true, false"
+    preset-set: "&aPreset set to %value% (applies when your dimension is next created)."
+    environment-set: "&aEnvironment set to %value% (applies when your dimension is next created)."
+    notify-set: "&aEntry notifications: %value%"
+
+  leave:
+    not-in-dimension: "&cYou are not in a pocket dimension."
+    leaving: "&aLeaving pocket dimension..."
+
+pdgamerule:
+  usage: "Usage: /pdgamerule <playername> <gamerule> [value]"
+  no-dimension: "That player doesn't have a pocket dimension."
+  unknown: "Unknown game rule: %rule%"
+  current-value: "Current value of %rule%: %value%"
+  unable-to-get: "Unable to get the value for game rule %rule%"
+  invalid-boolean: "Invalid Value, Valid Values are: true, false"
+  invalid-integer: "Invalid Value, Valid Values are integers only."
+  unsupported-type: "Unsupported game rule type."
+  set-success: "Game rule %rule% set to %value%"
+  invalid-value: "Invalid value for game rule %rule%"
+
+pdworldborder:
+  usage: "&cUsage: /pdworldborder <player> <size>"
+  invalid-int: "&cSize must be a valid integer."
+  unknown-player: "&cThat player has never played on this server."
+  success: "&aSet pocket dimension border size for %player% to %size%."
+  updated: "&aUpdated active world border."
+
+dimension:
+  loading: "&aLoading your pocket dimension!"
+  creation-failed: "&cFailed to create the pocket dimension."
+  teleporting: "&aSending you to your Pocket Dimension!"
+  load-failed: "&cFailed to load the pocket dimension."
+  returning: "Sending you back to the main world."
+  title-enter: "&dPocket Dimension"
+  subtitle-enter: "&7Welcome to your personal world"
+  title-leave: "&fMain World"
+  subtitle-leave: "&7Back to reality"
+
+protection:
+  denied-build: "&cYou don't have permission to build in this dimension."
+  denied-container: "&cYou can't open containers in this dimension."
+  denied-mobs: "&cYou can't hurt mobs in this dimension."
+
+economy:
+  insufficient-funds-creation: "&cYou need &f%cost%&c to create a pocket dimension."
+  insufficient-funds-upgrade: "&cYou need &f%cost%&c for that upgrade."
+  transaction-failed: "&cThe payment failed. Please try again."
+
+admin:
+  usage: "&cUsage: /pdadmin <delete|reset> <player> confirm | /pdadmin cleanup <days> confirm"
+  confirm-required: "&cThis cannot be undone. Run &f%command% confirm&c to proceed."
+  occupied: "&cThat dimension still has players inside: %players%"
+  delete:
+    usage: "Usage: /pdadmin delete <player> confirm"
+    success: "&aDeleted the pocket dimension and all its data."
+  reset:
+    usage: "Usage: /pdadmin reset <player> confirm"
+    success: "&aReset the pocket dimension world (player data kept)."
+  cleanup:
+    usage: "Usage: /pdadmin cleanup <days> confirm"
+    success: "&aRemoved %count% dimension(s) inactive for over %days% day(s)."
+  list:
+    none: "&7No pocket dimensions exist yet."
+    header: "&8--- &dPocket Dimensions &7(%count%)&8 ---"
+    entry: "&f%player% &7[%state%] &7border: &f%size% &7last seen: &f%last%"
+
+world-management:
+  entity-cap: "&cYour dimension has %count% entities, over the cap of %cap%. Please clean up."
+
+menu:
+  title: "&dPocket Dimension Menu"
+  locked: "&8(No permission)"
+  back:
+    name: "&7Back"
+  teleport:
+    name: "&5Travel to your dimension"
+    lore-enter: "&7Enter your pocket dimension."
+    lore-leave: "&7Return to the main world."
+  trust:
+    name: "&bTrusted players"
+    lore: "&7Manage who can build here."
+    skull-name: "&f%player%"
+    skull-lore:
+      - "&7Tier: &f%tier%"
+      - "&eLeft-click: cycle tier"
+      - "&cRight-click: remove"
+    empty: "&7No trusted players yet. Use /pd trust <player>."
+  preset:
+    name: "&aDimension preset"
+    lore:
+      - "&7Current: &f%value%"
+      - "&eClick to cycle"
+      - "&8Applies on next creation"
+  environment:
+    name: "&3Environment"
+    lore:
+      - "&7Current: &f%value%"
+      - "&eClick to cycle"
+      - "&8Applies on next creation"
+  border:
+    name: "&fWorld border"
+    lore:
+      - "&7Current: &f%size%"
+      - "&7Next tier: &f%next%"
+      - "&eClick to upgrade"
+  notify:
+    name: "&6Entry notifications"
+    lore:
+      - "&7Currently: &f%state%"
+      - "&eClick to toggle"
+
+mob-teleport:
+  success: "&aTeleported %entity% to your pocket dimension."
+  extract-success: "&aTeleported %entity% out of your pocket dimension."
+  denied: "&cYou cannot teleport this entity."
+  not-mob: "&cThat is not a valid mob."
+  dimension-error: "&cCould not find your pocket dimension."
+  no-return-location: "&cCould not find a return location for the mob."

@@ -1,0 +1,140 @@
+name: PocketDimensions
+version: '${project.version}'
+main: mc.lethargos.pocketdimensions.PocketDimensions
+api-version: '1.19'
+softdepend: [Vault, PlaceholderAPI]
+load: STARTUP
+commands:
+  givepd:
+    description: "Gives you an item for any players own pocketdimension!"
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.givepd
+    usage: "/givepd <player>"
+  pdtp:
+    description: "Lets an admin teleport into another players pocket dimension"
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.pdtp
+    usage: "/pdtp <player>"
+  pd:
+    description: "General Command for Pocket Dimensions"
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.players.pd
+    usage: "/pd <action> [player]"
+  pdgamerule:
+    description: "Set Gamerules in Pocket Dimensions"
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.pdgamerule
+    usage: "/pdgamerule <playername> <gamerule> [value]"
+  pdworldborder:
+    description: "Sets the world border size for a player's pocket dimension."
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.pdworldborder
+    usage: "/pdworldborder <player> <size>"
+  pdleave:
+    description: "Leaves the current pocket dimension."
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.player.pdleave
+    usage: "/pdleave"
+  pdreload:
+    description: "Reloads Pocket Dimensions configuration and messages."
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.reload
+    usage: "/pdreload"
+  pdlist:
+    description: "Lists all existing pocket dimensions."
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.admin.list
+    usage: "/pdlist"
+  pdadmin:
+    description: "Admin tools: delete, reset or clean up pocket dimensions."
+    permission-message: "No Permissions"
+    permission: pocketdimensions.commands.admin.delete
+    usage: "/pdadmin <delete|reset|cleanup> [player|days] confirm"
+permissions:
+  # --- Feature gating (per player; global switches live in config features:*) ---
+  pocketdimensions.receive.key:
+    description: "Receives the dimension key on first join when key-item.give-on-first-join is enabled."
+    default: true
+  pocketdimensions.feedback:
+    description: "Sees entry/exit titles and hears feedback sounds."
+    default: true
+  pocketdimensions.bypass.protection:
+    description: "Bypasses all pocket dimension protection (build, containers, mobs)."
+    default: op
+  # --- Player commands ---
+  pocketdimensions.commands.givepd.tool:
+    description: "Allows giving the mob teleportation tool."
+    default: op
+  pocketdimensions.commands.givepd:
+    description: "Allows giving the pocket dimension item."
+    default: op
+  pocketdimensions.commands.pdtp:
+    description: "Allows admin teleport to other players' dimensions."
+    default: op
+  pocketdimensions.commands.players.pd:
+    description: "Allows use of the main /pd command."
+    default: op
+  pocketdimensions.commands.player.pd.invite:
+    description: "Allows inviting players to your (or a trusted) dimension."
+    default: op
+  pocketdimensions.commands.player.pd.kick:
+    description: "Allows kicking players from your dimension."
+    default: op
+  pocketdimensions.commands.player.pd.kick.bypass:
+    description: "Bypasses being kicked from a dimension."
+    default: op
+  pocketdimensions.commands.player.pd.trust:
+    description: "Allows granting and revoking trust (/pd trust, /pd untrust)."
+    default: op
+  pocketdimensions.commands.player.pd.trust.trusted:
+    description: "Allows granting the full 'trusted' tier."
+    default: op
+  pocketdimensions.commands.player.pd.setspawn:
+    description: "Allows setting the dimension spawn point (/pd setspawn)."
+    default: op
+  pocketdimensions.commands.player.pd.upgrade:
+    description: "Allows border upgrades (/pd upgrade and the menu item)."
+    default: op
+  pocketdimensions.commands.player.pd.settings:
+    description: "Allows changing personal dimension settings (/pd settings)."
+    default: op
+  pocketdimensions.commands.player.pd.menu:
+    description: "Allows opening the GUI (/pd menu)."
+    default: op
+  pocketdimensions.commands.player.pd.menu.teleport:
+    description: "GUI section: teleport in/out."
+    default: op
+  pocketdimensions.commands.player.pd.menu.trust:
+    description: "GUI section: trust management."
+    default: op
+  pocketdimensions.commands.player.pd.menu.settings:
+    description: "GUI section: preset, environment and notification settings."
+    default: op
+  pocketdimensions.commands.player.pd.menu.border:
+    description: "GUI section: border upgrade."
+    default: op
+  pocketdimensions.commands.player.pdleave:
+    description: "Allows leaving a pocket dimension."
+    default: op
+  # --- Admin commands ---
+  pocketdimensions.commands.pdgamerule:
+    description: "Allows changing gamerules in dimensions (persisted per dimension)."
+    default: op
+  pocketdimensions.commands.pdworldborder:
+    description: "Allows changing world border size."
+    default: op
+  pocketdimensions.commands.reload:
+    description: "Allows reloading the plugin configuration."
+    default: op
+  pocketdimensions.commands.admin.list:
+    description: "Allows /pdlist."
+    default: op
+  pocketdimensions.commands.admin.delete:
+    description: "Allows /pdadmin delete (world + all data)."
+    default: op
+  pocketdimensions.commands.admin.reset:
+    description: "Allows /pdadmin reset (world only)."
+    default: op
+  pocketdimensions.commands.admin.cleanup:
+    description: "Allows /pdadmin cleanup <days>."
+    default: op

@@ -1,0 +1,174 @@
+# Pocket Dimensions Configuration
+
+# Default world border size (diameter)
+default-world-border-size: 10000
+
+# Global feature switches. Per-player control is done with permissions
+# (see README for the full permission list).
+features:
+  # Trust system + build/container/mob protection inside pocket dimensions
+  trust-protection: true
+  # Per-player world preset/environment choices (/pd settings, /pd menu)
+  dimension-presets: true
+  # /pd setspawn
+  setspawn: true
+  # /pd menu (GUI)
+  gui-menu: true
+  # Titles + sounds on enter/leave and owner entry notifications
+  feedback: true
+  # Register placeholders when PlaceholderAPI is installed
+  placeholderapi: true
+  # /pdlist and /pdadmin
+  admin-tools: true
+
+# Storage backend: JSON (files in the plugin folder), SQLITE or MYSQL.
+# Switching from JSON to SQL auto-imports your existing data one time.
+storage:
+  type: JSON
+  sqlite:
+    # File name inside plugins/PocketDimensions/
+    file: database.db
+  mysql:
+    host: localhost
+    port: 3306
+    database: pocketdimensions
+    username: root
+    password: ""
+    use-ssl: false
+    # Prefix for the tables created by the plugin
+    table-prefix: pd_
+
+# New-dimension generation. Players can override preset/environment for
+# their own dimension (/pd settings, /pd menu); changes apply only when a
+# dimension is created, never to existing worlds.
+dimension:
+  # FLAT (classic flat plains), VOID (empty world with a small platform),
+  # NORMAL (natural terrain, random seed)
+  default-preset: FLAT
+  # NORMAL, NETHER or THE_END
+  default-environment: NORMAL
+
+# Protection rules applied to visitors without build trust
+protection:
+  # Stop visitors from hurting the owner's mobs
+  protect-mobs: true
+  # Remove block damage from explosions inside pocket dimensions
+  block-explosions: true
+  # Extra materials treated as containers (in addition to the built-in list
+  # of chests, barrels, hoppers, dispensers, droppers, furnaces, shulkers,
+  # brewing stands, lecterns, jukeboxes and decorated pots)
+  extra-containers: []
+
+# Economy (requires Vault + an economy plugin). All costs are 0 / disabled
+# by default - nothing is charged until you enable this and set prices.
+economy:
+  enabled: false
+  # Charged the first time a player's dimension world is created
+  creation-cost: 0.0
+  # Border upgrade tiers for /pd upgrade and the menu. Without the economy
+  # enabled, upgrades are free and still permission-gated.
+  upgrades:
+    - size: 25000
+      cost: 5000.0
+    - size: 50000
+      cost: 20000.0
+
+# Entry/exit feedback (titles + sounds). Text lives in messages.yml
+# (dimension.title-* keys). Per player: pocketdimensions.feedback permission.
+feedback:
+  titles: true
+  sounds: true
+  sound-enter: ENTITY_PLAYER_LEVELUP
+  sound-leave: ENTITY_ENDERMAN_TELEPORT
+
+# Key Item Configuration
+key-item:
+  material: ECHO_SHARD
+  name: "&d%player%'s Pocket Dimension"
+  lore:
+    - "&7Right click to enter"
+    - "&7your pocket dimension"
+  # Custom model data for resource packs (0 = off)
+  custom-model-data: 0
+  # Enchant glint
+  glow: false
+  # Give the item automatically on first join (also needs the
+  # pocketdimensions.receive.key permission)
+  give-on-first-join: false
+  # Milliseconds between item uses (anti double-click)
+  interact-cooldown-ms: 1000
+  # Craftable key: the crafted key binds to the crafter
+  craftable: false
+  recipe:
+    shape:
+      - "DAD"
+      - "AEA"
+      - "DAD"
+    ingredients:
+      - key: D
+        material: DIAMOND
+      - key: A
+        material: AMETHYST_SHARD
+      - key: E
+        material: ECHO_SHARD
+
+# Mob Teleport Configuration
+mob-teleport:
+  enabled: true
+  # Modes: ALL (Allow all except excluded), WHITELIST (Allow only listed), BLACKLIST (Block listed, allow others)
+  mode: BLACKLIST
+  # List of EntityTypes (e.g., ZOMBIE, SKELETON, COW)
+  entities:
+    - WITHER
+    - ENDER_DRAGON
+  exclude:
+    # Categories to always exclude regardless of mode/whitelist (e.g., BOSS, PLAYER)
+    categories:
+      - BOSS
+      - PLAYER
+  # Whether to allow teleporting mobs that have a custom name (nametag)
+  allow-named-mobs: true
+
+# Tools Configuration
+tools:
+  # WARNING: May not function correctly yet
+  mob-teleporter:
+    # If true, this specific tool is required to teleport mobs.
+    # If false, the standard Pocket Dimension item can be used.
+    required: false
+    material: BLAZE_ROD
+    name: "&6%player%'s Mob Teleporter"
+    lore:
+      - "&7Right click a mob to send"
+      - "&7it to your pocket dimension"
+    custom-model-data: 0
+    glow: false
+
+# Gamerules applied to pocket dimensions. Values are true/false or integers.
+# Rule names are resolved at runtime with legacy-name fallbacks, so both the
+# new (26.x) and legacy (pre-1.21.11) spellings are accepted on any version.
+# Unknown rules are reported in the console once and skipped.
+# Players/admins can override these per dimension with /pdgamerule.
+default-gamerules:
+  spawnMobs: false
+  immediateRespawn: true
+  keepInventory: true
+  mobGriefing: false
+  advanceWeather: false
+  spawnPatrols: false
+  spawnWanderingTraders: false
+  spawnWardens: false
+  drowningDamage: false
+  fallDamage: false
+  maxEntityCramming: 25
+
+# Pocket dimension worlds are unloaded (after saving) when they have been
+# empty for a while, so memory does not grow with every dimension ever opened.
+world-management:
+  auto-unload: true
+  # Seconds an empty dimension stays loaded before it is unloaded.
+  unload-delay-seconds: 300
+  # How often to check for empty dimensions (seconds, minimum 30).
+  sweep-interval-seconds: 300
+  # Warn owners when their dimension exceeds this many entities (0 = off).
+  entity-cap: 0
